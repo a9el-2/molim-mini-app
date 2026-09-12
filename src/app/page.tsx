@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import Card from "./components/Card";
 import Button from "./components/Button";
 import PageShell from "./components/PageShell";
 import { useAuth } from "./lib/auth-context";
+import type { UserRole } from "./lib/roles";
 
 const ROLE_MESSAGES = {
   VOLUNTEER:
@@ -19,9 +22,69 @@ const ROLE_MESSAGES = {
     "تابع وأدر جميع أعمال فريق مُلم واتخذ الإجراءات اللازمة.",
 } as const;
 
+const ROLE_HOME: Record<UserRole, string> = {
+  VOLUNTEER: "/tasks",
+  DEPARTMENT_HEAD: "/department",
+  HR: "/hr",
+  ADMIN: "/dashboard",
+  SUPER_ADMIN: "/dashboard",
+};
+
 export default function Home() {
-  const { user, role, roleName } = useAuth();
+  const { user, role, roleName, status, isReady } = useAuth();
+  const router = useRouter();
   const roleMessage = ROLE_MESSAGES[role] || ROLE_MESSAGES.VOLUNTEER;
+
+  useEffect(() => {
+    if (!isReady) return;
+
+    if (status === "unauthenticated") {
+      router.replace("/join");
+      return;
+    }
+
+    if (status === "authenticated") {
+      if (user && user.status !== "active") {
+        router.replace("/account");
+        return;
+      }
+
+      const target = ROLE_HOME[user?.role || role];
+      if (target) {
+        router.replace(target);
+      }
+    }
+  }, [status, isReady, user, role, router]);
+
+  if (!isReady) {
+    return (
+      <PageShell>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-molim-muted">
+            <span className="h-8 w-8 animate-spin rounded-full border-2 border-molim-orange border-t-transparent" />
+            <span className="text-sm font-bold">
+              جاري التحقق من حسابك...
+            </span>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (status !== "demo") {
+    return (
+      <PageShell>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="flex flex-col items-center gap-3 text-molim-muted">
+            <span className="h-8 w-8 animate-spin rounded-full border-2 border-molim-orange border-t-transparent" />
+            <span className="text-sm font-bold">
+              جاري تجهيز حسابك...
+            </span>
+          </div>
+        </div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell>

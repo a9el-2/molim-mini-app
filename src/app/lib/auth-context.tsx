@@ -9,14 +9,21 @@ import React, {
 import { UserRole, ROLE_NAMES } from "./roles";
 import { User } from "./user";
 import { fetchUser, telegramAuth } from "./supabase/dto";
-import { useTelegram } from "../components/TelegramBridge";
+import { useTelegram, TelegramInitData } from "../components/TelegramBridge";
 
 export type UserProfile = User & {
   avatar?: string;
   badge: string;
   email?: string;
   phone?: string;
+  status?: string;
 };
+
+export type AuthStatus =
+  | "loading"
+  | "demo"
+  | "authenticated"
+  | "unauthenticated";
 
 export const MOCK_PROFILES: Record<UserRole, UserProfile> = {
   VOLUNTEER: {
@@ -26,6 +33,7 @@ export const MOCK_PROFILES: Record<UserRole, UserProfile> = {
     department: "البحث",
     badge: "متطوعة",
     email: "sara.m@molim.org",
+    status: "active",
   },
   DEPARTMENT_HEAD: {
     id: "MOL-00010",
@@ -34,6 +42,7 @@ export const MOCK_PROFILES: Record<UserRole, UserProfile> = {
     department: "الإعلام",
     badge: "رئيس قسم الإعلام",
     email: "ahmed.k@molim.org",
+    status: "active",
   },
   HR: {
     id: "MOL-00008",
@@ -42,6 +51,7 @@ export const MOCK_PROFILES: Record<UserRole, UserProfile> = {
     department: "الموارد البشرية",
     badge: "مسؤول الموارد البشرية",
     email: "khaled.a@molim.org",
+    status: "active",
   },
   ADMIN: {
     id: "MOL-00003",
@@ -50,6 +60,7 @@ export const MOCK_PROFILES: Record<UserRole, UserProfile> = {
     department: "الإدارة",
     badge: "الإدارة العليا",
     email: "mohammed.a@molim.org",
+    status: "active",
   },
   SUPER_ADMIN: {
     id: "MOL-00001",
@@ -58,13 +69,25 @@ export const MOCK_PROFILES: Record<UserRole, UserProfile> = {
     department: "الإدارة العامة",
     badge: "الرئيس العام",
     email: "aseel@molim.org",
+    status: "active",
   },
+};
+
+const GUEST_PROFILE: UserProfile = {
+  id: "",
+  name: "زائر",
+  role: "VOLUNTEER",
+  department: "غير محدد",
+  badge: "زائر",
+  status: "unauthenticated",
 };
 
 type AuthContextType = {
   user: UserProfile;
   role: UserRole;
   roleName: string;
+  status: AuthStatus;
+  telegram: TelegramInitData | null;
   switchRole: (role: UserRole) => void;
   switchUser: (profile: UserProfile) => void;
   isReady: boolean;
@@ -87,25 +110,74 @@ function readSavedRole(): UserRole | null {
   }
 }
 
+function isDemoEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_DEMO === "1";
+}
+
+function initialStatus(): AuthStatus {
+  if (typeof window === "undefined") {
+    return isDemoEnabled() ? "demo" : "unauthenticated";
+  }
+
+  if (window.Telegram?.WebApp?.initData) {
+    return "loading";
+  }
+
+  return isDemoEnabled() ? "demo" : "unauthenticated";
+}
+
+function initialUser(): UserProfile {
+  if (typeof window === "undefined") {
+    return isDemoEnabled() ? MOCK_PROFILES.SUPER_ADMIN : GUEST_PROFILE;
+  }
+
+  if (window.Telegram?.WebApp?.initData) {
+    return GUEST_PROFILE;
+  }
+
+  if (isDemoEnabled()) {
+    const saved = readSavedRole();
+    return saved ? MOCK_PROFILES[saved] : MOCK_PROFILES.SUPER_ADMIN;
+  }
+
+  return GUEST_PROFILE;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const savedRole = readSavedRole();
-
-  const [user, setUser] = useState<UserProfile>(
-    savedRole ? MOCK_PROFILES[savedRole] : MOCK_PROFILES.SUPER_ADMIN
-  );
-
-  const [isReady, setIsReady] = useState<boolean>(true);
+  const [status, setStatus] = useState<AuthStatus>(initialStatus);
+  const [user, setUser] = useState<UserProfile>(initialUser);
+  const [telegram, setTelegram] = useState<TelegramInitData | null>(null);
   const telegramState = useTelegram();
 
   useEffect(() => {
     if (telegramState.status !== "ready") return;
 
     const tg = telegramState.telegram;
-    if (!tg || !tg.initData) return;
 
     let cancelled = false;
 
-    telegramAuth(tg.initData).then(async (result) => {
+    const timeout = setTimeout(async () => {
+      if (cancelled) return;
+
+      if (!tg) {
+        return;
+      }
+
+      if (!tg.initData) {
+        if (isDemoEnabled()) {
+          const saved = readSavedRole();
+          setUser(saved ? MOCK_PROFILES[saved] : MOCK_PROFILES.SUPER_ADMIN);
+        } else {
+          setUser(GUEST_PROFILE);
+        }
+        setStatus(isDemoEnabled() ? "demo" : "unauthenticated");
+        return;
+      }
+
+      setTelegram(tg);
+      setStatus("loading");
+
+      const result = await telegramAuth(tg.initData);
       if (cancelled) return;
 
       if (result.hasLinkedUser && result.userId) {
@@ -121,22 +193,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             badge: ROLE_NAMES[real.role as UserRole] || "عضو",
             email: real.email ?? undefined,
             phone: real.phone ?? undefined,
+            status: real.status,
           });
+          setStatus("authenticated");
+          return;
         }
       }
 
-      setIsReady(true);
-    });
+      setUser(GUEST_PROFILE);
+      setStatus("unauthenticated");
+    }, 0);
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
     };
   }, [telegramState]);
+
+  const roleOverride = user?.role ?? "VOLUNTEER";
 
   const switchRole = (newRole: UserRole) => {
     const profile = MOCK_PROFILES[newRole];
     if (profile) {
       setUser(profile);
+      setStatus("demo");
       try {
         localStorage.setItem(STORAGE_KEY, newRole);
       } catch {
@@ -147,6 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const switchUser = (newProfile: UserProfile) => {
     setUser(newProfile);
+    setStatus("demo");
     try {
       localStorage.setItem(STORAGE_KEY, newProfile.role);
     } catch {
@@ -154,17 +235,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const roleName = ROLE_NAMES[user.role] || user.role;
+  const roleName = ROLE_NAMES[roleOverride] || roleOverride;
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        role: user.role,
+        role: roleOverride,
         roleName,
+        status,
+        telegram,
         switchRole,
         switchUser,
-        isReady,
+        isReady: status !== "loading",
       }}
     >
       {children}
@@ -176,9 +259,11 @@ export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
     return {
-      user: MOCK_PROFILES.SUPER_ADMIN,
-      role: "SUPER_ADMIN" as UserRole,
-      roleName: ROLE_NAMES.SUPER_ADMIN,
+      user: isDemoEnabled() ? MOCK_PROFILES.SUPER_ADMIN : GUEST_PROFILE,
+      role: (isDemoEnabled() ? "SUPER_ADMIN" : "VOLUNTEER") as UserRole,
+      roleName: isDemoEnabled() ? ROLE_NAMES.SUPER_ADMIN : ROLE_NAMES.VOLUNTEER,
+      status: isDemoEnabled() ? ("demo" as AuthStatus) : ("unauthenticated" as AuthStatus),
+      telegram: null,
       switchRole: () => {},
       switchUser: () => {},
       isReady: true,

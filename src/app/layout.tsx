@@ -40,7 +40,10 @@ export default function RootLayout({
         <AuthProvider>
           <MolimHeader />
           {children}
-          {process.env.NEXT_PUBLIC_DEMO === "1" && <RoleSwitcher />}
+          {process.env.NODE_ENV === "development" &&
+            process.env.NEXT_PUBLIC_DEMO === "1" && (
+              <RoleSwitcher />
+            )}
         </AuthProvider>
       </body>
     </html>

@@ -74,7 +74,7 @@ export default function RoleGuard({ allowedRoles, children }: RoleGuardProps) {
               <span>العودة للرئيسية</span>
             </Link>
 
-            {recommendedRoleToSwitch && (
+            {recommendedRoleToSwitch && process.env.NODE_ENV === "development" && (
               <button
                 type="button"
                 onClick={() => switchRole(recommendedRoleToSwitch)}

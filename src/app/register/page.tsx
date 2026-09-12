@@ -198,20 +198,27 @@ export default function RegisterPage() {
 
   const [countrySearch, setCountrySearch] = useState("");
 
-  const [form, setForm] = useState({
-    firstName: "",
-    fatherName: "",
-    familyName: "",
-    email: "",
-    phone: "",
-    phoneCountry: null as Country | null,
-    birthDate: "",
-    nationality: null as Country | null,
-    residence: null as Country | null,
-    hasCv: "",
-    cvName: "",
-    skills: [] as string[],
-    tools: [] as string[],
+  const [form, setForm] = useState(() => {
+    const tgUser =
+      typeof window === "undefined"
+        ? undefined
+        : window.Telegram?.WebApp?.initDataUnsafe?.user;
+
+    return {
+      firstName: tgUser?.first_name ?? "",
+      fatherName: "",
+      familyName: tgUser?.last_name ?? "",
+      email: "",
+      phone: "",
+      phoneCountry: null as Country | null,
+      birthDate: "",
+      nationality: null as Country | null,
+      residence: null as Country | null,
+      hasCv: "",
+      cvName: "",
+      skills: [] as string[],
+      tools: [] as string[],
+    };
   });
 
   const filteredCountries = countries.filter((country) =>
@@ -405,6 +412,21 @@ export default function RegisterPage() {
               أدخل بياناتك الأساسية بدقة، وستُستخدم لإدارة حسابك داخل
               فريق مُلم وإصدار الشهادات والمستندات عند استحقاقها.
             </p>
+
+            {telegramState.status === "ready" &&
+              telegramState.telegram?.user.username && (
+                <div className="mt-4 flex items-center gap-3 border border-[#ed542f]/20 bg-[#ed542f]/5 p-3">
+                  <span className="text-xl">✈️</span>
+                  <div>
+                    <p className="text-xs font-black text-molim-foreground">
+                      سيتم ربط حسابك مع تيليجرام:
+                    </p>
+                    <p className="mt-0.5 text-sm font-bold text-[#ed542f]" dir="ltr">
+                      @{telegramState.telegram.user.username}
+                    </p>
+                  </div>
+                </div>
+              )}
 
             <div className="mt-8 space-y-4">
               <Input
