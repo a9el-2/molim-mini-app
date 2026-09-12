@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import MolimHeader from "./components/MolimHeader";
+import AppGate from "./components/AppGate";
 import RoleSwitcher from "./components/RoleSwitcher";
 import { AuthProvider } from "./lib/auth-context";
 
@@ -38,8 +38,7 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
         <AuthProvider>
-          <MolimHeader />
-          {children}
+          <AppGate>{children}</AppGate>
           {process.env.NODE_ENV === "development" &&
             process.env.NEXT_PUBLIC_DEMO === "1" && (
               <RoleSwitcher />
