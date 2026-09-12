@@ -9,7 +9,11 @@ import React, {
 import { UserRole, ROLE_NAMES } from "./roles";
 import { User } from "./user";
 import { fetchUser, telegramAuth } from "./supabase/dto";
-import { useTelegram, TelegramInitData } from "../components/TelegramBridge";
+import {
+  useTelegram,
+  TelegramInitData,
+  isInsideTelegramContext,
+} from "../components/TelegramBridge";
 
 export type UserProfile = User & {
   avatar?: string;
@@ -119,7 +123,7 @@ function initialStatus(): AuthStatus {
     return isDemoEnabled() ? "demo" : "unauthenticated";
   }
 
-  if (window.Telegram?.WebApp?.initData) {
+  if (window.Telegram?.WebApp?.initData || isInsideTelegramContext()) {
     return "loading";
   }
 
@@ -131,7 +135,7 @@ function initialUser(): UserProfile {
     return isDemoEnabled() ? MOCK_PROFILES.SUPER_ADMIN : GUEST_PROFILE;
   }
 
-  if (window.Telegram?.WebApp?.initData) {
+  if (window.Telegram?.WebApp?.initData || isInsideTelegramContext()) {
     return GUEST_PROFILE;
   }
 
@@ -160,6 +164,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (cancelled) return;
 
       if (!tg) {
+        if (isDemoEnabled()) {
+          const saved = readSavedRole();
+          setUser(saved ? MOCK_PROFILES[saved] : MOCK_PROFILES.SUPER_ADMIN);
+        } else {
+          setUser(GUEST_PROFILE);
+        }
+        setStatus(isDemoEnabled() ? "demo" : "unauthenticated");
         return;
       }
 

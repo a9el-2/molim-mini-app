@@ -45,6 +45,15 @@ export type TelegramState =
   | { status: "ready"; telegram: TelegramInitData | null }
   | { status: "error"; error: string };
 
+export function isInsideTelegramContext(): boolean {
+  if (typeof window === "undefined") return false;
+  if (typeof navigator === "undefined") return false;
+  return (
+    /Telegram|TG/i.test(navigator.userAgent) ||
+    "TelegramWebviewProxy" in window
+  );
+}
+
 function readTelegram(): TelegramState {
   const w = typeof window === "undefined" ? undefined : window.Telegram?.WebApp;
 
@@ -75,18 +84,10 @@ function readTelegram(): TelegramState {
 }
 
 export function useTelegram(): TelegramState {
-  const [state, setState] = useState<TelegramState>(() => {
-    if (typeof window === "undefined") {
-      return { status: "loading" };
-    }
-    return window.Telegram?.WebApp
-      ? { status: "loading" }
-      : { status: "ready", telegram: null };
-  });
+  const [state, setState] = useState<TelegramState>({ status: "loading" });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!window.Telegram?.WebApp) return;
 
     let cancelled = false;
     let attempts = 0;
@@ -96,10 +97,20 @@ export function useTelegram(): TelegramState {
 
       const w = window.Telegram?.WebApp;
 
-      if (!w || !w.initData || !w.initDataUnsafe?.user) {
-        if (attempts < 20) {
+      if (!w) {
+        if (isInsideTelegramContext() && attempts < 50) {
           attempts += 1;
-          setTimeout(check, 50);
+          setTimeout(check, 100);
+          return;
+        }
+        setState({ status: "ready", telegram: null });
+        return;
+      }
+
+      if (!w.initData || !w.initDataUnsafe?.user) {
+        if (attempts < 50) {
+          attempts += 1;
+          setTimeout(check, 100);
           return;
         }
         setState({ status: "ready", telegram: null });
