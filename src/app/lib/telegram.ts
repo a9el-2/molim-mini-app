@@ -23,6 +23,7 @@ export function validateTelegramInitData(
   initData: string,
   botToken: string
 ): TelegramAuthResult {
+  console.log("[telegram-auth][validate] version: DUAL-v3");
   const params = new URLSearchParams(initData);
 
   const hash = params.get("hash");
@@ -35,21 +36,29 @@ export function validateTelegramInitData(
     return { ok: false, error: "بيانات Telegram تفتقد auth_date" };
   }
 
-  const dataCheckPairs = Array.from(params.entries())
-    .filter(([key]) => key !== "hash")
-    .map(([key, value]) => `${key}=${value}`)
-    .sort();
-
-  const dataCheckString = dataCheckPairs.join("\n");
-
   const secretKey = hmacSha256(
     Buffer.from("WebAppData"),
     Buffer.from(botToken)
   );
 
-  const calculatedHash = hexSha256(dataCheckString, secretKey);
+  // الصيغة الأولى: قيم مفكوكة (URLSearchParams)
+  const decodedPairs = Array.from(params.entries())
+    .filter(([key]) => key !== "hash")
+    .map(([key, value]) => `${key}=${value}`)
+    .sort();
+  const decodedCheckString = decodedPairs.join("\n");
 
-  if (calculatedHash !== hash) {
+  // الصيغة الثانية: القيم كما وردت حرفيًا (قبل فك الترميز)
+  const rawPairs = initData
+    .split("&")
+    .filter((part) => part && !part.startsWith("hash="))
+    .sort();
+  const rawCheckString = rawPairs.join("\n");
+
+  const decodedHash = hexSha256(decodedCheckString, secretKey);
+  const rawHash = hexSha256(rawCheckString, secretKey);
+
+  if (decodedHash !== hash && rawHash !== hash) {
     return { ok: false, error: "تعذر التحقق من بيانات Telegram" };
   }
 
