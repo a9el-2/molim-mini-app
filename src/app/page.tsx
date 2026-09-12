@@ -1,0 +1,390 @@
+"use client";
+
+import Link from "next/link";
+import Card from "./components/Card";
+import Button from "./components/Button";
+import PageShell from "./components/PageShell";
+import { useAuth } from "./lib/auth-context";
+
+const ROLE_MESSAGES = {
+  VOLUNTEER:
+    "تابع مهامك وساعاتك وكل ما يتعلق بعملك داخل فريق مُلم.",
+  DEPARTMENT_HEAD:
+    "تابع مهامك ومهام قسمك وأعمال الفريق المسندة إليك.",
+  HR:
+    "تابع شؤون المتطوعين والاتفاقيات والشهادات والبيانات الإدارية.",
+  ADMIN:
+    "تابع أداء الفريق والأقسام والمهام والساعات من مكان واحد.",
+  SUPER_ADMIN:
+    "تابع وأدر جميع أعمال فريق مُلم واتخذ الإجراءات اللازمة.",
+} as const;
+
+export default function Home() {
+  const { user, role, roleName } = useAuth();
+  const roleMessage = ROLE_MESSAGES[role] || ROLE_MESSAGES.VOLUNTEER;
+
+  return (
+    <PageShell>
+      {/* مقدمة الصفحة */}
+      <section className="mb-6">
+        <p className="text-sm font-bold text-molim-blue">
+          {roleName}
+        </p>
+
+        <h1 className="mt-2 text-3xl font-black">
+          أهلًا، {user.name}
+        </h1>
+
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-molim-muted">
+          {roleMessage}
+        </p>
+      </section>
+
+      {/* المعلومات الأساسية */}
+      <section className="grid gap-4 md:grid-cols-3">
+        <InfoCard
+          title="الاسم"
+          value={user.name}
+        />
+
+        <InfoCard
+          title="القسم"
+          value={user.department}
+          href="/department"
+        />
+
+        <InfoCard
+          title="الصلاحية"
+          value={roleName}
+          href="/account"
+        />
+      </section>
+
+
+      {/* ملخص المهام */}
+      <section className="mt-4 grid gap-4 md:grid-cols-2">
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs text-molim-muted">
+                مهامي
+              </p>
+
+              <p className="mt-2 text-3xl font-black">
+                8
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-molim-muted">
+                إجمالي المهام المسجلة في حسابك.
+              </p>
+            </div>
+
+            <div className="bg-molim-soft px-3 py-2 text-sm font-bold text-molim-blue">
+              مهام
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <Link href="/tasks">
+              <Button variant="secondary" className="w-full">
+                عرض مهامي
+              </Button>
+            </Link>
+          </div>
+        </Card>
+
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs text-molim-muted">
+                الساعات المعتمدة
+              </p>
+
+              <p className="mt-2 text-3xl font-black">
+                42
+              </p>
+
+              <p className="mt-2 text-xs leading-5 text-molim-muted">
+                إجمالي الساعات التطوعية المعتمدة.
+              </p>
+            </div>
+
+            <div className="bg-molim-soft px-3 py-2 text-sm font-bold text-molim-orange">
+              ساعات
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <Link href="/hours">
+              <Button variant="primary" className="w-full">
+                عرض الساعات
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </section>
+
+      {/* حالة العمل */}
+      <section className="mt-6">
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs text-molim-muted">
+                حالة العمل
+              </p>
+
+              <h2 className="mt-1 text-lg font-black">
+                تحتاج متابعة
+              </h2>
+            </div>
+
+            <span className="border border-molim-orange bg-molim-soft px-3 py-1 text-xs font-bold text-molim-orange">
+              2 مهام
+            </span>
+          </div>
+
+          <p className="mt-3 text-sm leading-6 text-molim-muted">
+            توجد مهام تحتاج إلى متابعة أو إكمال من حسابك.
+          </p>
+
+          <div className="mt-5">
+            <Link href="/tasks">
+              <Button variant="outline">
+                الانتقال إلى المهام
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </section>
+
+      {/* القسم */}
+      <section className="mt-6">
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs text-molim-muted">
+                القسم
+              </p>
+
+              <h2 className="mt-1 text-xl font-black">
+                {user.department}
+              </h2>
+            </div>
+
+            <div className="bg-molim-soft px-3 py-2 text-xs font-bold text-molim-blue">
+              الفريق
+            </div>
+          </div>
+
+          <div className="mt-5 border-t border-molim pt-4">
+            <p className="text-sm leading-6 text-molim-muted">
+              يمكنك متابعة أعضاء قسمك والمهام المرتبطة بالقسم
+              من صفحة القسم.
+            </p>
+
+            <div className="mt-4">
+              <Link href="/department">
+                <Button variant="secondary">
+                  عرض القسم
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      </section>
+
+      {/* إجراء رئيسي حسب الصلاحية */}
+      <section className="mt-6">
+        {role === "VOLUNTEER" && (
+          <Card className="p-5">
+            <p className="text-xs text-molim-muted">
+              إجراء سريع
+            </p>
+
+            <h2 className="mt-1 text-lg font-black">
+              تسجيل مهمة جديدة
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-molim-muted">
+              سجّل المهمة التي أنجزتها حتى تدخل مرحلة المراجعة
+              واحتساب الساعات.
+            </p>
+
+            <div className="mt-4">
+              <Link href="/add-task">
+                <Button variant="primary">
+                  إضافة مهمة
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )}
+
+        {role === "DEPARTMENT_HEAD" && (
+          <Card className="p-5">
+            <p className="text-xs text-molim-muted">
+              إدارة القسم
+            </p>
+
+            <h2 className="mt-1 text-lg font-black">
+              متابعة أعمال القسم
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-molim-muted">
+              يمكنك متابعة مهام القسم والأعضاء وإضافة المهام
+              من القائمة الجانبية أو صفحة المهام.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/tasks">
+                <Button variant="secondary">
+                  مهام القسم
+                </Button>
+              </Link>
+
+              <Link href="/task-review">
+                <Button variant="outline">
+                  مراجعة المهام
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )}
+
+        {role === "HR" && (
+          <Card className="p-5">
+            <p className="text-xs text-molim-muted">
+              الموارد البشرية
+            </p>
+
+            <h2 className="mt-1 text-lg font-black">
+              إدارة شؤون الفريق
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-molim-muted">
+              الخيارات الإدارية الخاصة بالموارد البشرية موجودة
+              في القائمة الجانبية.
+            </p>
+
+            <div className="mt-4">
+              <Link href="/hr">
+                <Button variant="secondary">
+                  فتح الموارد البشرية
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )}
+
+        {role === "ADMIN" && (
+          <Card className="p-5">
+            <p className="text-xs text-molim-muted">
+              الإدارة
+            </p>
+
+            <h2 className="mt-1 text-lg font-black">
+              لوحة المتابعة الإدارية
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-molim-muted">
+              جميع الأدوات الإدارية موجودة داخل القائمة الجانبية
+              حتى تبقى الصفحة الرئيسية بسيطة.
+            </p>
+
+            <div className="mt-4">
+              <Link href="/dashboard">
+                <Button variant="secondary">
+                  لوحة القيادة
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )}
+
+        {role === "SUPER_ADMIN" && (
+          <Card className="p-5">
+            <p className="text-xs text-molim-muted">
+              الرئيس العام
+            </p>
+
+            <h2 className="mt-1 text-lg font-black">
+              إدارة كيان مُلم
+            </h2>
+
+            <p className="mt-2 text-sm leading-6 text-molim-muted">
+              الأدوات والصلاحيات الإدارية المتقدمة موجودة داخل
+              القائمة الجانبية.
+            </p>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/dashboard">
+                <Button variant="secondary">
+                  لوحة القيادة
+                </Button>
+              </Link>
+
+              <Link href="/settings">
+                <Button variant="outline">
+                  الإعدادات
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        )}
+      </section>
+
+      {/* معلومات مختصرة */}
+      <section className="mt-6">
+        <Card soft className="p-5">
+          <p className="text-sm font-bold">
+            منصة مُلم
+          </p>
+
+          <p className="mt-2 text-xs leading-6 text-molim-muted">
+            جميع المعلومات والعمليات تظهر لك حسب صلاحيات حسابك.
+            استخدم القائمة الجانبية للوصول إلى الصفحات التي لا
+            تحتاج إليها بشكل متكرر.
+          </p>
+        </Card>
+      </section>
+    </PageShell>
+  );
+}
+
+function InfoCard({
+  title,
+  value,
+  href,
+}: {
+  title: string;
+  value: string;
+  href?: string;
+}) {
+  const content = (
+    <>
+      <p className="text-xs text-molim-muted">
+        {title}
+      </p>
+
+      <p className="mt-2 text-lg font-black">
+        {value}
+      </p>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href}>
+        <Card className="p-5 transition hover:border-[var(--molim-blue)]">
+          {content}
+        </Card>
+      </Link>
+    );
+  }
+
+  return (
+    <Card className="p-5">
+      {content}
+    </Card>
+  );
+}

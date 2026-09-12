@@ -1,0 +1,618 @@
+@import "tailwindcss";
+
+/* برمجة ألوان النظام لتُحلّ كأدوات Tailwind (مثل text-molim-muted,
+   bg-molim-surface, placeholder:text-molim-muted) مع بقائها مرتبطة
+   بالمتغيرات لتتكيّف تلقائيًا بين الوضع الفاتح والداكن. */
+@theme inline {
+  --color-molim: var(--background);
+  --color-molim-surface: var(--surface);
+  --color-molim-soft: var(--surface-soft);
+  --color-molim-muted: var(--muted);
+  --color-molim-foreground: var(--foreground);
+  --color-molim-orange: var(--molim-orange);
+  --color-molim-blue: var(--molim-blue);
+}
+
+/* =========================================================
+   مُلم — نظام التصميم المركزي
+   جميع الصفحات تعتمد على هذه القيم والمكونات
+   ========================================================= */
+
+:root {
+  /* الهوية الأساسية */
+  --molim-orange: #ff4500;
+  --molim-blue: #1a3a6e;
+
+  /* الوضع الفاتح */
+  --background: #f0f4ff;
+  --foreground: #1a0a2e;
+
+  --surface: #ffffff;
+  --surface-soft: #f7f9fd;
+
+  --header-bg: #ffffff;
+  --header-border: var(--molim-orange);
+
+  --card-bg: #ffffff;
+  --card-border: #e0e0e0;
+
+  --muted: #667085;
+  --muted-light: #98a2b3;
+
+  /* الحالات */
+  --success-bg: #1a4a1a;
+  --success-color: #4caf50;
+
+  --danger-bg: #4a1a1a;
+  --danger-color: #f44336;
+
+  --warning-bg: #fff5f2;
+  --warning-color: var(--molim-orange);
+
+  /* أجزاء الموقع */
+  --page-hero-bg: linear-gradient(
+    135deg,
+    #0f1f3d,
+    #1a3a62,
+    #ff4500
+  );
+
+  --footer-bg: #0f1f3d;
+  --footer-border: var(--molim-orange);
+  --footer-text: #ffffff;
+  --footer-link: #cccccc;
+  --footer-bottom-border: #2a1a3e;
+  --footer-bottom-text: #666666;
+
+  /* مساعدات */
+  --faq-hover-bg: #fff5f2;
+
+  --skeleton-start: #f0f0f0;
+  --skeleton-middle: #e0e0e0;
+
+  --countdown-bg: #fff5f2;
+  --countdown-border: var(--molim-orange);
+  --countdown-color: var(--molim-orange);
+
+  --countdown-urgent-bg: #4a1a1a;
+  --countdown-urgent-color: #ff6b6b;
+
+  /* الإدارة */
+  --admin-container-bg: transparent;
+
+  --admin-token-bar-bg: #ffffff;
+  --admin-token-bar-border: var(--molim-orange);
+
+  --admin-input-border: var(--molim-orange);
+
+  --admin-tab-active-bg: var(--molim-orange);
+  --admin-tab-active-color: #ffffff;
+
+  --admin-tab-inactive-bg: var(--molim-blue);
+  --admin-tab-inactive-color: #ffffff;
+
+  --admin-item-bg: #ffffff;
+  --admin-item-border: #e0e0e0;
+  --admin-item-shadow: rgba(0, 0, 0, 0.08);
+
+  --admin-item-title: var(--molim-orange);
+  --admin-item-text: var(--molim-blue);
+
+  --admin-edit-bg: var(--molim-blue);
+  --admin-delete-bg: #cc0000;
+
+  --admin-modal-overlay: rgba(0, 0, 0, 0.5);
+  --admin-modal-bg: #ffffff;
+  --admin-modal-shadow: rgba(0, 0, 0, 0.3);
+
+  --admin-close-color: #666666;
+  --admin-close-hover: #cc0000;
+
+  --admin-save-bg: var(--molim-blue);
+
+  --admin-files-bg: #fff8f5;
+  --admin-files-border: var(--molim-orange);
+
+  --admin-file-input-border: #cccccc;
+
+  --admin-add-file-bg: var(--molim-blue);
+  --admin-remove-file-bg: #cc0000;
+
+  --admin-divider: var(--molim-orange);
+}
+
+/* =========================================================
+   الوضع الداكن
+   ========================================================= */
+
+[data-theme="dark"],
+html.dark {
+  --background: #0d1b2a;
+  --foreground: #f1f5f9;
+
+  --surface: #0f172a;
+  --surface-soft: #132035;
+
+  --header-bg: #0f172a;
+  --header-border: var(--molim-blue);
+
+  --card-bg: #0f172a;
+  --card-border: rgba(255, 255, 255, 0.1);
+
+  --muted: #a7b0bd;
+  --muted-light: #7a9cc4;
+
+  --molim-orange: #ff4500;
+  --molim-blue: #1a3a6e;
+
+  --success-bg: #004d40;
+  --success-color: #80cbc4;
+
+  --danger-bg: #4a0000;
+  --danger-color: #ef9a9a;
+
+  --warning-bg: #0f2140;
+  --warning-color: #ff4500;
+
+  --page-hero-bg: linear-gradient(
+    135deg,
+    #0a1628,
+    #0f2140,
+    #1a3a6e
+  );
+
+  --footer-bg: #080f1a;
+  --footer-border: var(--molim-blue);
+  --footer-text: #cccccc;
+  --footer-link: #7a9cc4;
+  --footer-bottom-border: #0d1b2a;
+  --footer-bottom-text: #555555;
+
+  --faq-hover-bg: #0f2140;
+
+  --skeleton-start: #132035;
+  --skeleton-middle: #1e3a6e;
+
+  --countdown-bg: #0f2140;
+  --countdown-border: var(--molim-blue);
+  --countdown-color: #7a9cc4;
+
+  --countdown-urgent-bg: #4a0000;
+  --countdown-urgent-color: #ef9a9a;
+
+  --admin-container-bg: transparent;
+
+  --admin-token-bar-bg: #132035;
+  --admin-token-bar-border: var(--molim-blue);
+
+  --admin-input-border: var(--molim-blue);
+
+  --admin-tab-active-bg: var(--molim-blue);
+  --admin-tab-active-color: #ffffff;
+
+  --admin-tab-inactive-bg: #0f2140;
+  --admin-tab-inactive-color: #eaeaea;
+
+  --admin-item-bg: #132035;
+  --admin-item-border: #1e3a6e;
+  --admin-item-shadow: rgba(0, 0, 0, 0.2);
+
+  --admin-item-title: var(--molim-orange);
+  --admin-item-text: #7a9cc4;
+
+  --admin-edit-bg: var(--molim-blue);
+  --admin-delete-bg: #880000;
+
+  --admin-modal-overlay: rgba(0, 0, 0, 0.7);
+  --admin-modal-bg: #132035;
+  --admin-modal-shadow: rgba(0, 0, 0, 0.5);
+
+  --admin-close-color: #7a9cc4;
+  --admin-close-hover: #ef9a9a;
+
+  --admin-save-bg: var(--molim-blue);
+
+  --admin-files-bg: #0f2140;
+  --admin-files-border: var(--molim-blue);
+
+  --admin-file-input-border: #1e3a6e;
+
+  --admin-add-file-bg: var(--molim-blue);
+  --admin-remove-file-bg: #880000;
+
+  --admin-divider: var(--molim-blue);
+}
+
+/* =========================================================
+   الأساس
+   ========================================================= */
+
+html {
+  background: var(--background);
+  color: var(--foreground);
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), "Segoe UI", Tahoma, Arial, sans-serif;
+
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+/* =========================================================
+   الألوان العامة
+   ========================================================= */
+
+.text-molim-blue {
+  color: var(--molim-blue);
+}
+
+.text-molim-orange {
+  color: var(--molim-orange);
+}
+
+.text-molim-muted {
+  color: var(--muted);
+}
+
+.text-molim-foreground {
+  color: var(--foreground);
+}
+
+.bg-molim {
+  background: var(--background);
+}
+
+.bg-molim-surface {
+  background: var(--surface);
+}
+
+.bg-molim-soft {
+  background: var(--surface-soft);
+}
+
+.bg-molim-card {
+  background: var(--card-bg);
+}
+
+.bg-molim-blue {
+  background: var(--molim-blue);
+}
+
+.bg-molim-orange {
+  background: var(--molim-orange);
+}
+
+.border-molim {
+  border-color: var(--card-border);
+}
+
+.border-molim-blue {
+  border-color: var(--molim-blue);
+}
+
+.border-molim-orange {
+  border-color: var(--molim-orange);
+}
+
+/* =========================================================
+   البطاقات
+   ========================================================= */
+
+.molim-card {
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+}
+
+.molim-card-soft {
+  border: 1px solid var(--card-border);
+  background: var(--surface-soft);
+}
+
+/* =========================================================
+   الأزرار
+   ========================================================= */
+
+.molim-button-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 46px;
+  padding: 0 18px;
+
+  border: 1px solid var(--molim-orange);
+  background: var(--molim-orange);
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.molim-button-primary:hover {
+  opacity: 0.9;
+}
+
+.molim-button-primary:active {
+  transform: translateY(1px);
+}
+
+.molim-button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 46px;
+  padding: 0 18px;
+
+  border: 1px solid var(--molim-blue);
+  background: var(--molim-blue);
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.molim-button-secondary:hover {
+  opacity: 0.9;
+}
+
+.molim-button-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 46px;
+  padding: 0 18px;
+
+  border: 1px solid var(--card-border);
+  background: var(--surface);
+  color: var(--foreground);
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.molim-button-outline:hover {
+  border-color: var(--molim-blue);
+  background: var(--surface-soft);
+}
+
+/* =========================================================
+   الحقول
+   ========================================================= */
+
+.molim-input {
+  width: 100%;
+  min-height: 50px;
+
+  border: 1px solid var(--card-border);
+  background: var(--surface);
+  color: var(--foreground);
+
+  padding: 0 14px;
+
+  outline: none;
+  font-size: 14px;
+
+  transition: border-color 0.2s ease;
+}
+
+.molim-input:focus {
+  border-color: var(--molim-blue);
+}
+
+.molim-textarea {
+  width: 100%;
+
+  border: 1px solid var(--card-border);
+  background: var(--surface);
+  color: var(--foreground);
+
+  padding: 12px 14px;
+
+  outline: none;
+  font-size: 14px;
+
+  resize: vertical;
+
+  transition: border-color 0.2s ease;
+}
+
+.molim-textarea:focus {
+  border-color: var(--molim-blue);
+}
+
+/* =========================================================
+   الهيدر
+   ========================================================= */
+
+.molim-header {
+  border-bottom: 1px solid var(--header-border);
+  background: var(--header-bg);
+}
+
+/* =========================================================
+   القائمة الجانبية
+   ========================================================= */
+
+.molim-sidebar {
+  background: var(--surface);
+  border-left: 1px solid var(--card-border);
+}
+
+.molim-sidebar-item {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 46px;
+
+  padding: 0 14px;
+
+  border: 1px solid transparent;
+
+  background: transparent;
+  color: var(--foreground);
+
+  text-align: right;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.molim-sidebar-item:hover {
+  background: var(--surface-soft);
+  border-color: var(--card-border);
+}
+
+.molim-sidebar-item.active {
+  background: color-mix(
+    in srgb,
+    var(--molim-blue) 12%,
+    var(--surface)
+  );
+
+  border-color: var(--molim-blue);
+  color: var(--molim-blue);
+}
+
+html.dark .molim-sidebar-item.active {
+  background: color-mix(
+    in srgb,
+    var(--molim-blue) 32%,
+    var(--surface)
+  );
+
+  border-color: var(--muted-light);
+  color: var(--muted-light);
+}
+
+/* =========================================================
+   الفوتر
+   ========================================================= */
+
+.molim-footer {
+  background: var(--footer-bg);
+  color: var(--footer-text);
+
+  border-top: 1px solid var(--footer-border);
+}
+
+.molim-footer a {
+  color: var(--footer-link);
+}
+
+/* =========================================================
+   شارات الحالة والفلاتر
+   ========================================================= */
+
+.molim-chip {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--card-border);
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.molim-chip-active {
+  border-color: var(--molim-orange);
+  background: var(--molim-orange);
+  color: #ffffff;
+}
+
+.molim-notice {
+  border-right: 4px solid var(--molim-orange);
+  background: var(--surface-soft);
+}
+
+/* =========================================================
+   الروابط
+   ========================================================= */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* =========================================================
+   الوضع الداكن للحقول
+   ========================================================= */
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color-scheme: dark;
+}
+
+html.dark ::placeholder {
+  color: var(--muted-light);
+}
+
+/* =========================================================
+   التحديد
+   ========================================================= */
+
+::selection {
+  background: var(--molim-orange);
+  color: #ffffff;
+}
+
+/* =========================================================
+   شريط التمرير
+   ========================================================= */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--card-border) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
